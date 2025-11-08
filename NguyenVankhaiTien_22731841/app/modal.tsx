@@ -1,12 +1,31 @@
-import { router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Button, Platform, StyleSheet, TextInput, View } from 'react-native';
-import { addTodo } from '../services/db'; // Import hàm add
+// 1. Import useLocalSearchParams, router, và useNavigation
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+// 2. Import thêm updateTodoTitle
+import { StatusBar } from 'expo-status-bar';
+import { addTodo, updateTodoTitle } from '../services/db';
 
 export default function ModalScreen() {
-  const [title, setTitle] = useState('');
+  // 3. Lấy params từ router (từ Câu 6)
+  const params = useLocalSearchParams();
+  const navigation = useNavigation();
+
+  // Kiểm tra xem đây là modal Sửa hay Thêm
+  const isEditMode = params.id;
+  const todoId = isEditMode ? parseInt(params.id as string, 10) : null;
+
+  // 4. Khởi tạo title từ params nếu là Sửa
+  const [title, setTitle] = useState(isEditMode ? (params.title as string) : '');
   const [isLoading, setIsLoading] = useState(false);
+
+  // (Câu 6) Đặt tiêu đề cho modal
+  useEffect(() => {
+    navigation.setOptions({
+      title: isEditMode ? 'Sửa công việc' : 'Thêm công việc mới'
+    });
+  }, [navigation, isEditMode]);
+
 
   const handleSave = async () => {
     // (Câu 4) Validate title không rỗng
@@ -17,11 +36,16 @@ export default function ModalScreen() {
 
     setIsLoading(true);
     try {
-      await addTodo(title);
-      // (Câu 4) Tự động refresh list (nhờ useFocusEffect ở index)
+      if (isEditMode && todoId) {
+        // (Câu 6) Logic Sửa
+        await updateTodoTitle(todoId, title);
+      } else {
+        // (Câu 4) Logic Thêm
+        await addTodo(title);
+      }
       router.back(); // Đóng modal
     } catch (error) {
-      console.error('Lỗi khi thêm todo:', error);
+      console.error('Lỗi khi lưu todo:', error);
       Alert.alert('Lỗi', 'Không thể lưu công việc.');
     } finally {
       setIsLoading(false);
@@ -35,7 +59,7 @@ export default function ModalScreen() {
         placeholder="Nhập tiêu đề công việc..."
         value={title}
         onChangeText={setTitle}
-        autoFocus={true} // Tự động mở bàn phím
+        autoFocus={true}
       />
       
       <Button 
@@ -44,12 +68,12 @@ export default function ModalScreen() {
         disabled={isLoading}
       />
       
-      {/* Use a light status bar on iOS to account for the black space above the modal */}
       <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
     </View>
   );
 }
 
+// ... (styles giữ nguyên từ Câu 4)
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -1,8 +1,12 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getTodos, Todo, toggleTodoDone } from '../../services/db'; // Import từ CSDL
+import { deleteTodo, getTodos, Todo, toggleTodoDone } from '../../services/db'; // Import từ CSDL
+// 1. Import thêm Alert và Ionicons
+// 2. Import thêm Ionicons
+// 3. Import hàm deleteTodo
 // 2. Import hàm toggleTodoDone
 
 export default function HomeScreen() {
@@ -12,6 +16,28 @@ export default function HomeScreen() {
       pathname: '/modal',
       params: { id: item.id, title: item.title }
     });
+  };
+  const handleDelete = (id: number) => {
+    // (Câu 7) Hiển thị Alert xác nhận 
+    Alert.alert(
+      'Xác nhận Xóa',
+      'Bạn có chắc muốn xóa công việc này không?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Xóa',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteTodo(id);
+              loadTodos(); // Tải lại danh sách
+            } catch (error) {
+              console.error('Lỗi khi xóa todo:', error);
+            }
+          },
+        },
+      ]
+    );
   };
 
   // 4. (Câu 6) Cập nhật hàm renderItem
@@ -51,12 +77,10 @@ export default function HomeScreen() {
 
   // 4. (Câu 5) Cập nhật hàm renderItem
   const renderItem = ({ item }: { item: Todo }) => (
-    // Thêm onLongPress vào Pressable
-    <Pressable
-      onPress={() => handleToggleTodo(item)} // (Câu 5)
-      onLongPress={() => handleEditPress(item)} // (Câu 6)
-    >
-      <View style={styles.itemContainer}>
+    // Chúng ta không dùng onLongPress cho item nữa, mà dùng cho nút Sửa
+    <View style={styles.itemContainer}>
+      {/* Phần nội dung (cho Câu 5) */}
+      <Pressable style={styles.itemContent} onPress={() => handleToggleTodo(item)}>
         <Text
           style={[
             styles.itemTitle,
@@ -65,8 +89,20 @@ export default function HomeScreen() {
         >
           {item.title}
         </Text>
+      </Pressable>
+
+      {/* Phần nút (Câu 6 và 7) */}
+      <View style={styles.itemButtons}>
+        {/* Nút Sửa (Câu 6) */}
+        <Pressable style={styles.iconButton} onPress={() => handleEditPress(item)}>
+          <Ionicons name="pencil" size={20} color="#007BFF" />
+        </Pressable>
+        {/* Nút Xóa (Câu 7) */}
+        <Pressable style={styles.iconButton} onPress={() => handleDelete(item.id)}>
+          <Ionicons name="trash" size={20} color="#DC3545" />
+        </Pressable>
       </View>
-    </Pressable>
+    </View>
   );
   
   if (isLoading) {
@@ -115,6 +151,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#888',
   },
+  // (Câu 7) Sửa lại itemContainer
   itemContainer: {
     backgroundColor: '#fff',
     padding: 15,
@@ -122,13 +159,27 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: '#eee',
+    flexDirection: 'row', // Hiển thị các phần tử trên một hàng
+    justifyContent: 'space-between', // Đẩy nội dung và nút ra 2 bên
+    alignItems: 'center',
+  },
+  itemContent: {
+    flex: 1, // Cho phép nội dung co giãn
   },
   itemTitle: {
     fontSize: 16,
     fontWeight: '500',
   },
   itemDone: {
-    textDecorationLine: 'line-through', // Gạch ngang
+    textDecorationLine: 'line-through',
     color: '#aaa',
+  },
+  // (Câu 7) Style cho các nút
+  itemButtons: {
+    flexDirection: 'row',
+  },
+  iconButton: {
+    marginLeft: 15, // Khoảng cách giữa các nút
+    padding: 5,
   },
 });

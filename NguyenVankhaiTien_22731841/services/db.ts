@@ -75,3 +75,10 @@ export const updateTodoTitle = async (id: number, title: string) => {
   );
   return result;
 };
+export const deleteTodo = async (id: number) => {
+  const result = await db.runAsync(
+    `DELETE FROM todos WHERE id = ?;`,
+    [id]
+  );
+  return result;
+};
