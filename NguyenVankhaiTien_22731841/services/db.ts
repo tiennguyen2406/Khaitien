@@ -35,6 +35,13 @@ export const initDB = async () => {
     );
   }
 };
+
+export const getTodos = async () => {
+  const allRows: Todo[] = await db.getAllAsync<Todo>(
+    `SELECT * FROM todos ORDER BY created_at DESC;`
+  );
+  return allRows;
+};
 export const addTodo = async (title: string) => {
   // Validate title không rỗng (bắt buộc)
   if (title.trim().length === 0) {
@@ -45,6 +52,14 @@ export const addTodo = async (title: string) => {
   const result = await db.runAsync(
     `INSERT INTO todos (title, done, created_at) VALUES (?, 0, ?);`,
     [title.trim(), now]
+  );
+  return result;
+};
+export const toggleTodoDone = async (id: number, currentDoneState: number) => {
+  const newState = currentDoneState === 0 ? 1 : 0; // Đảo ngược trạng thái
+  const result = await db.runAsync(
+    `UPDATE todos SET done = ? WHERE id = ?;`,
+    [newState, id]
   );
   return result;
 };

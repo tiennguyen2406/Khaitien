@@ -1,5 +1,5 @@
+import { initDB } from '@/services/db';
 import { useEffect, useState } from 'react';
-import { initDatabase } from '../services/db';
 
 export const useDatabaseInit = () => {
   const [dbReady, setDbReady] = useState(false);
@@ -7,7 +7,7 @@ export const useDatabaseInit = () => {
 
   useEffect(() => {
     // Gọi hàm khởi tạo bất đồng bộ
-    initDatabase()
+    initDB()
       .then(() => {
         setDbReady(true);
       })
