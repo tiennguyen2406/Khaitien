@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -17,6 +18,8 @@ export default function HomeScreen() {
       params: { id: item.id, title: item.title }
     });
   };
+  const [searchText, setSearchText] = useState('');
+  
   const handleDelete = (id: number) => {
     // (Câu 7) Hiển thị Alert xác nhận 
     Alert.alert(
