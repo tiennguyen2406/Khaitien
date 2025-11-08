@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { initDatabase } from '../utils/db';
+import { initDatabase } from '../services/db';
 
 export const useDatabaseInit = () => {
   const [dbReady, setDbReady] = useState(false);

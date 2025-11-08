@@ -1,132 +1,98 @@
-import { Stack, useFocusEffect } from 'expo-router';
-import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-// Đảm bảo path đúng đến utils/db
-import TodoItem from '../../components/TodoItem';
-import { getTodos, Todo } from '../../utils/db';
+import { Image } from 'expo-image';
+import { Platform, StyleSheet } from 'react-native';
 
-export default function TodoListScreen() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+import { HelloWave } from '@/components/hello-wave';
+import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Link } from 'expo-router';
 
-  // Hàm tải dữ liệu từ DB
-  const loadTodos = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getTodos();
-      setTodos(data);
-    } catch (e) {
-      console.error('Failed to load todos:', e);
-      setError('Không thể tải danh sách công việc.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Sử dụng useFocusEffect để tải dữ liệu mỗi khi màn hình được focus
-  // (ví dụ: khi quay lại từ màn hình modal thêm/sửa)
-  useFocusEffect(
-    useCallback(() => {
-        loadTodos();
-        return () => {};
-    }, [loadTodos])
-  );
-  
-  // Hiển thị Loading/Error state
-  if (loading && todos.length === 0) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#007aff" />
-        <Text style={styles.loadingText}>Đang tải...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>Lỗi: {error}</Text>
-      </View>
-    );
-  }
-
-  // Empty state: hiển thị khi không có công việc nào
-  if (todos.length === 0) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>Chưa có việc nào 🎉</Text>
-        <Text>Nhấn '+' để thêm công việc mới!</Text>
-      </View>
-    );
-  }
-
+export default function HomeScreen() {
   return (
-    <View style={styles.fullContainer}>
-      {/* Cấu hình Header */}
-      <Stack.Screen
-        options={{
-            headerTitle: "Todo Notes",
-            // Nút "+" sẽ được thêm ở Q4
-            headerRight: () => (
-                <TouchableOpacity style={styles.addButton}>
-                    <Text style={styles.addButtonText}>+</Text>
-                </TouchableOpacity>
-            ),
-        }}
-      />
-      
-      {/* Danh sách Công việc */}
-      <FlatList
-        data={todos}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-            <TodoItem 
-                item={item} 
-                onToggleDone={() => {}} 
-                onEdit={() => {}} 
-                onDelete={() => {}} 
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+      headerImage={
+        <Image
+          source={require('@/assets/images/partial-react-logo.png')}
+          style={styles.reactLogo}
+        />
+      }>
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title">Welcome!</ThemedText>
+        <HelloWave />
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
+        <ThemedText>
+          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
+          Press{' '}
+          <ThemedText type="defaultSemiBold">
+            {Platform.select({
+              ios: 'cmd + d',
+              android: 'cmd + m',
+              web: 'F12',
+            })}
+          </ThemedText>{' '}
+          to open developer tools.
+        </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <Link href="/modal">
+          <Link.Trigger>
+            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
+          </Link.Trigger>
+          <Link.Preview />
+          <Link.Menu>
+            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
+            <Link.MenuAction
+              title="Share"
+              icon="square.and.arrow.up"
+              onPress={() => alert('Share pressed')}
             />
-        )}
-      />
-    </View>
+            <Link.Menu title="More" icon="ellipsis">
+              <Link.MenuAction
+                title="Delete"
+                icon="trash"
+                destructive
+                onPress={() => alert('Delete pressed')}
+              />
+            </Link.Menu>
+          </Link.Menu>
+        </Link>
+
+        <ThemedText>
+          {`Tap the Explore tab to learn more about what's included in this starter app.`}
+        </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
+        <ThemedText>
+          {`When you're ready, run `}
+          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
+          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
+          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
+          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
+        </ThemedText>
+      </ThemedView>
+    </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-    fullContainer: {
-      flex: 1,
-      backgroundColor: '#f5f5f5',
-    },
-    centerContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#f5f5f5',
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#333'
-    },
-    emptyText: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 10,
-    },
-    errorText: {
-      color: 'red',
-      fontSize: 16,
-    },
-    addButton: {
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 5,
-    },
-    addButtonText: {
-        color: '#007aff',
-        fontSize: 24,
-        fontWeight: 'bold',
-    },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepContainer: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  reactLogo: {
+    height: 178,
+    width: 290,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+  },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // Đảm bảo path đúng đến utils/db
-import { Todo } from '../utils/db';
+import { Todo } from '../services/db';
 
 // Định nghĩa props cần thiết cho component.
 // Các hàm thao tác sẽ được truyền từ màn hình cha.
