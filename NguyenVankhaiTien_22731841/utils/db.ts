@@ -1,7 +1,7 @@
 import {
-    openDatabaseAsync,
-    type SQLiteDatabase,
-    type SQLiteRunResult
+  openDatabaseAsync,
+  type SQLiteDatabase,
+  type SQLiteRunResult
 } from 'expo-sqlite';
 
 // Mở kết nối đến database và lưu vào một Promise.
@@ -45,6 +45,18 @@ export const executeGetAll = async <T = any>(sql: string, params: (string | numb
     }
 };
 
+
+// --- LOGIC CÂU 3: GET TODOS (ĐÃ THÊM VÀO) ---
+
+/**
+ * Lấy tất cả các công việc từ bảng todos, sắp xếp theo thời gian tạo mới nhất.
+ */
+export const getTodos = async (): Promise<Todo[]> => {
+  const todos = await executeGetAll<Todo>('SELECT * FROM todos ORDER BY created_at DESC');
+  return todos;
+};
+
+
 // --- LOGIC CÂU 2: TẠO BẢNG & SEED ---
 
 const CREATE_TABLE_SQL = `
@@ -62,17 +74,16 @@ const SEED_SQL_2 = 'INSERT INTO todos (title, done, created_at) VALUES (?, 1, ?)
 export const initDatabase = async () => {
   const db = await dbPromise;
   try {
-    // 1. Tạo bảng (dùng execAsync, là cách tối ưu để thực thi các lệnh DB không cần trả về)
+    // 1. Tạo bảng 
     await db.execAsync(CREATE_TABLE_SQL);
     console.log("Database initialized: Table 'todos' checked/created.");
 
-    // 2. Kiểm tra và Seed (sử dụng executeGetAll để lấy COUNT)
+    // 2. Kiểm tra và Seed 
     const countResult = await executeGetAll<{ count: number }>('SELECT COUNT(*) AS count FROM todos');
     const count = countResult[0].count; 
 
     if (count === 0) {
       console.log('Seeding initial data...');
-      // Sử dụng executeSql (dùng runAsync) cho INSERT
       await executeSql(SEED_SQL_1, ['Lên kế hoạch dự án Todo App', Date.now() - 3600000]);
       await executeSql(SEED_SQL_2, ['Hoàn thành bài tập SQL', Date.now()]);
       console.log('Initial data seeded.');
