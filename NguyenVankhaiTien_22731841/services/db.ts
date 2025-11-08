@@ -63,3 +63,15 @@ export const toggleTodoDone = async (id: number, currentDoneState: number) => {
   );
   return result;
 };
+export const updateTodoTitle = async (id: number, title: string) => {
+  // Validate title không rỗng
+  if (title.trim().length === 0) {
+    throw new Error('Tiêu đề không được để trống');
+  }
+  
+  const result = await db.runAsync(
+    `UPDATE todos SET title = ? WHERE id = ?;`,
+    [title.trim(), id]
+  );
+  return result;
+};

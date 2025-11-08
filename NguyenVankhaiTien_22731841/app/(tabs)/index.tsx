@@ -1,10 +1,21 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getTodos, Todo } from '../../services/db'; // Import từ CSDL
+import { getTodos, Todo, toggleTodoDone } from '../../services/db'; // Import từ CSDL
+// 2. Import hàm toggleTodoDone
 
 export default function HomeScreen() {
+  const handleEditPress = (item: Todo) => {
+    // Mở modal và truyền 'id' và 'title' cũ
+    router.push({
+      pathname: '/modal',
+      params: { id: item.id, title: item.title }
+    });
+  };
+
+  // 4. (Câu 6) Cập nhật hàm renderItem
+  
   const [todos, setTodos] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -40,13 +51,15 @@ export default function HomeScreen() {
 
   // 4. (Câu 5) Cập nhật hàm renderItem
   const renderItem = ({ item }: { item: Todo }) => (
-    // Bọc item trong Pressable và gọi hàm handleToggleTodo
-    <Pressable onPress={() => handleToggleTodo(item)}>
+    // Thêm onLongPress vào Pressable
+    <Pressable
+      onPress={() => handleToggleTodo(item)} // (Câu 5)
+      onLongPress={() => handleEditPress(item)} // (Câu 6)
+    >
       <View style={styles.itemContainer}>
         <Text
           style={[
             styles.itemTitle,
-            // (Câu 5) UI gạch ngang nếu done = 1
             item.done === 1 && styles.itemDone,
           ]}
         >
